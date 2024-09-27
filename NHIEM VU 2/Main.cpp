@@ -7,7 +7,7 @@
 #define distance2 100
 
 int time = 1000;                           // Thời gian delay
-int threshold;                             // Giá trị của cảm biến IR (bổ sung sau) 
+int threshold = 50;                             // Giá trị của cảm biến IR (bổ sung sau) 
 bool firsttime = true;
 bool check_mode1 = true;
 bool check_mode2 = true;
