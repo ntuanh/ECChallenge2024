@@ -1,10 +1,12 @@
 
 #include <Leanbot.h>                    // sử dụng thư viện Leanbot
-#define vL 400
-#define vR 400
-#define time 1000
+
+const int vL = 1000;
+const int vR = 1000;
+const int time = 100;
+
 void setup() {
-  Leanbot.begin();                      // khởi động leanbot
+  Leanbot.begin();                   
 }
 void forward() // hàm đi thẳng
 {
@@ -14,7 +16,7 @@ void backward() // hàm lùi
 {
   LbMotion.runLR(-vL, -vR);
 }
-void turnleft() // hàm quay trái 90 độ
+void turnleft() // hàm quay trái 90 độ 
 {
   LbMotion.runLR(-vL, vR);      
   LbMotion.waitRotationDeg(90);
@@ -22,91 +24,130 @@ void turnleft() // hàm quay trái 90 độ
 void turnright() // hàm quay phải 90 độ
 {
   LbMotion.runLR(vL, -vR);      
-  LbMotion.waitRotationDeg(90);
+  LbMotion.waitRotationDeg();
 }
-void reverse() // hàm quay ngược 180 độ
+
+void reverse() // hàm quay ngược 180 độ sang phải
 {
   LbMotion.runLR(vL, -vR);      
   LbMotion.waitRotationDeg(180);
 }
-void back()                             // Hàm lùi Leanbot đến ngã 4 2 Room
-{
-  backward();
-  LbMotion.waitDistanceMm(65);
-}
-void checkRoom()                        // Hàm kiểm tra Room A hoặc Room B có người không
-{
-  turnright();
-  LbDelay(100);         
-  int distanceMm = Leanbot.pingMm();
-  int limit = 30;
-  int offset = 10;
-  if(distanceMm <= 100)
-  {
-    distanceMm = Leanbot.pingMm();
-    if (distanceMm > (limit + offset)){
-      forward();
-      LbDelay(100);
-      LbMotion.waitDistanceMm(distanceMm - (litmit + offset), distanceMm - (litmit + offset));
-      LbDelay(100);
-      LbGripper.close();
-      LbDelay(100);
-      backward();
-      LbMotion.waitDistanceMm(distanceMm - (litmit + offset), distanceMm - (litmit + offset));
-      LbDelay(100);
-      turnright(); 
-    }
-  }
-  else if(distanceMm > 100)
-  {
-    reverse();
-    LbDelay(100);
-    distanceMm = Leanbot.pingMm();
-    if (distanceMm > (limit + offset)){
-      forward();
-      LbDelay(100);
-      LbMotion.waitDistanceMm(distanceMm - (litmit + offset), distanceMm - (litmit + offset));
-      LbDelay(100);
-      LbGripper.close();
-      LbDelay(100);
-      backward();
-      LbMotion.waitDistanceMm(distanceMm - (litmit + offset), distanceMm - (litmit + offset));
-      LbDelay(100);
-      turnleft(); 
-  }
-  }
-} 
 
-void rescue() // Di chuyển đến Rescue
+
+void twoto4()
 {
-    while(LbIRLine.isBlackDetected())
+  while(true)
+  {
+    int line = LbIRLine.read();
+    if(line == 0b0110)
     {
       forward();
     }
-    LbDelay(100);
-    LbMotion.stopAndWait();
-    LbDelay(100);
-    LbGripper.open();
-    LbDelay(100);
+    if(line == 0b1111)
+    {
+      LbMotion.stopAndWait();
+      break;
+    }
+  }
+}
+void rescuepoint1()
+{
+  reverse();
+  while(true)
+  {
+    int line = LbIRLine.read();
+    if(line == 0b0110 || line == 0b1111)
+    {
+      forward();
+    }
+    if(LbIRLine.isBlackDetected())
+    {
+      LbMotion.stopAndWait();
+      break;
+    }
+  }
+  reverse();
+}
+void checkroom()
+{
+  twoto4();
+  forward();
+  LbMotion.waitDistanceMm(20);
+  LbMotion.runLR(vL, -vR);
+  LbMotion.waitRotationDeg(25);
+  int d = Leanbot.pingMm();
+  if(d < 200)
+  {
+    LbMotion.runLR(-vL, vR);
+    LbMotion.waitRotationDeg(25);
+    twoto4();
+    forward();
+    LbMotion.waitDistanceMm(25);
+    turnright();
+    forward();
+    LbMotion.waitDistanceMm(50);
+    LbGripper.moveToLR(90, 90, 2000); // kẹp 90 độ trong 2s
+    // for(int i = 1; i <= 6; i++)
+    // {
+    //   LbGripper.moveTo(15);
+    //   LbDelay(time);
+    // }
     reverse();
+    twoto4();
+    forward();
+    LbMotion.waitDistanceMm(25);
+    turnleft();
+  }
+  if(d > 200)
+  {
+    LbMotion.runLR(-vL, vR);
+    LbMotion.waitRotationDeg(25);
+    twoto4();
+    forward();
+    LbMotion.waitDistanceMm(25);
+    turnleft();
+    forward();
+    LbMotion.waitDistanceMm(50);
+    LbGripper.moveToLR(90, 90, 2000); // kẹp 90 độ trong 2s
+    // for(int i = 1; i <= 6; i++)
+    // {
+    //   LbGripper.moveTo(15);
+    //   LbDelay(time);
+    // }
+    reverse();
+    twoto4();
+    forward();
+    LbMotion.waitDistanceMm(25);
+    turnright();
+  }
+}
+void rescuepoint2()
+{
+  while(true)
+  {
+    int line = LbIRLine.read();
+    if(line == 0b0110 || line == 0b1111)
+    {
+      forward();
+    }
+    if(LbIRLine.isBlackDetected())
+    {
+      LbMotion.stopAndWait();
+      break;
+    }
+  }
+  LbGripper.open();
+  reverse();
 }
 void safe()
 {
-  int line = LbIRLine.read();
-  int cnt = 0;
+  twoto4();
   while(LbIRLine.isBlackDetected())
   {
+  int line = LbIRLine.read();
   if(line == 0b0110)
   {
     forward();
-  }
-  if (line == 0b1111 && cnt == 0)
-  {
-    cnt = 1;
-    LbMotion.stopAndWait();
-    LbDelay(100);
-    turnright();
-    LbDelay(100);
   }
   if(line == 0b0000)
   {
@@ -114,11 +155,13 @@ void safe()
     LbDelay(100);
     forward();
   }
-  if(line == 0b1111 && cnt == 1)
+  if(line == 0b1111)
   {
     LbMotion.stopAndWait();
     LbDelay(100);
-    turnleft();
+    LbMotion.runLR(vL, vR);
+    LbMotion.waitDistanceMm(25);
+    turnright();
     LbDelay(100);
   }
   }
