@@ -213,6 +213,33 @@ void NhiemVu4::Processing()
 
 }
 
+/*************************************************************
+Solution 2 
+**************************************************************/
+
+/*
+void NhiemVu4::Processing()
+{
+  // Mode 1 : Move forward and turn left , move forward continue with double distance
+  while (LbTouch.read(TB2A) == 0)LbDelay(10);
+  Forward( speedrun , dis_forward );
+  TurnLeft( speedturn , 90 );
+  Forward( speedrun , dis_unit * 2 );
+  LbMotion.stopAndWait() ;
+  LbDelay(time_delay);
+
+  // Mode 2 : follow wall until detect white space
+  while (LbTouch.read(TB2A) == 0)LbDelay(10);
+  while ( !whiteSpace() ){
+    int val = detectObject ;
+    if( val == 0)LbMotion.runLR( speed , speed )
+    if( val == 1)LbMotion.runLR( speed - speedadd , speed );
+    if( val == -1 )LbMotion.runLR ( speed, speed - speedadd );
+  }
+}
+*/
+
+
 void loop()
 {
   NhiemVu4 nv4 ;
