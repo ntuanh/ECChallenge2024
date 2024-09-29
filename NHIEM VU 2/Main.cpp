@@ -140,8 +140,11 @@ void Grip(int time_angle)
 // Grip break 
 void GripBreak(int time_angle)
 {
-    for (int i = 90; i >= 0; i -= 10)
+    for (int i = 90; i >= 0; i -= 10) {
         LbGripper.moveToLR(i, i, time_angle);
+    }
+    LbMotion.stopAndWait();
+    LbDelay(time_delay);
 }
 
 bool junction()                                     // check junction road 
@@ -160,12 +163,17 @@ the first challenge ( NHIEMVU2 )
 class NhiemVu2
 {
 private:
-    int disOutCO2 = 40;                            // mm
-    int disCO22 = 40;
-    int speedup = 1000;                             // mm 
+    int disOutCO2 = 100;                            // mm
+    int disCO22 = 70;
+    int speedup = 1500;                             // mm 
     int speedfl = 500;
     int speedrun = 500;
     int speedturn = 500;
+    int distanceADD = 40;
+    int distanceADD2 = 50;
+    int distanceLIMIT = 850;
+    int distanceFORWARD2 = 200;
+    int distanceFORWARD1 = 130;
 
     int time_angle = 500;
 
@@ -175,34 +183,54 @@ public:
 
 void NhiemVu2::Processing()
 {
+    // finish nv1
+    LbGripper.close();
+
     // Mode 1 
     while (LbTouch.read(TB2A) == 0)LbDelay(10);
     Forward(speedrun, disCO22);
     LbMotion.stopAndWait();
 
-    // Mode 2
-    while (LbTouch.read(TB2A) == 0)LbDelay(10);
+    // Mode 2 : 
+    //while (LbTouch.read(TB2A) == 0)LbDelay(10);
     TurnLeft(speedturn, 90);
     Forward(speedrun, disOutCO2);
 
-    // Mode 3 
-    while (LbTouch.read(TB2A) == 0)LbDelay(10);
-    while (!junction())FollowLine(speedfl);
+    // Mode 3 : go to junctio
+    //while (LbTouch.read(TB2A) == 0)LbDelay(10);
+    //while (!junction())
+    //FollowLine(speedfl);
+    Forward( speedrun , 100);
     LbMotion.stopAndWait();
+    while (junction())
+    Forward(speedrun, distanceADD);
     LbDelay(time_delay);
 
     //Mode 4  
-    while (LbTouch.read(TB2A) == 0)LbDelay(10);
+    //while (LbTouch.read(TB2A) == 0)LbDelay(10);
+    //long distance = LbMotion.getDistanceMm();
     TurnLeft(speedturn, 90);
-    while (!junction())FollowLine(speedup);
+    LbDelay(time_delay);
+    while(LbMotion.getDistanceMm() < distanceLIMIT)
+    FollowLine(speedfl);
+    Forward(speedup, distanceFORWARD1);
+    LbMotion.stopAndWait();
+    LbDelay(time_delay);
+    TurnRight( speedturn , 90) ;
+    Forward(speedfl, distanceFORWARD2);
+    while (!junction())FollowLine(speedfl);
 
     // Mode 5 
-    while (LbTouch.read(TB2A) == 0)LbDelay(10);
+   // while (LbTouch.read(TB2A) == 0)LbDelay(10);
+    while(junction()) {
+    Forward(speedfl, distanceADD2);
     TurnLeft(speedturn, 90);
-    while (!whiteSpace())Forward(speedrun, 5);
+    break;
+    }
+    while (!whiteSpace())Forward(speedrun, 3);
 
     // Mode 6 
-    while (LbTouch.read(TB2A) == 0)LbDelay(10);
+    //while (LbTouch.read(TB2A) == 0)LbDelay(10);
     GripBreak(time_angle);
     TurnLeft(speedturn, 180);
     LbDelay(time_delay);
